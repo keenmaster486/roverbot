@@ -9,6 +9,8 @@
 
 	<p id="status">Status: unknown</p>
 
+	<input type="number" id="speedId" value="50">
+
 </body>
 </html>
 
@@ -27,11 +29,12 @@
 		'right': false
 	};
 
-	const speed = 50;
+	let speed = parseInt(document.getElementById('speedId').value);
 
 	const sendCommand = async () => {
 		// console.log(motors);
 		// console.log(keys);
+		speed = parseInt(document.getElementById('speedId').value);
 		if (keys['up']) {
 			motors[1] = speed;
 			motors[2] = speed;
