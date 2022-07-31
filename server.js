@@ -5,12 +5,15 @@ const { SerialPort } = require('serialport');
 
 const app = express();
 
-
-const port = new SerialPort({
-	path: '/dev/ttyACM0',
-	baudRate: 9600
-});
-
+let port = null;
+try {
+	port = new SerialPort({
+		path: '/dev/ttyACM0',
+		baudRate: 115200
+	});
+} catch (err) {
+	console.log(err);
+}
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -66,15 +69,18 @@ app.post('/motors', (req, res) => {
 	const commandString = `${motor1}|${motor2}|${motor3}|${motor4}|`;
 	// send to serial port
 	console.log(commandString);
-
-	port.write(commandString, (err) => {
-		if (err) {
-			return console.log(err);
-		}
-		console.log('Message written');
-	})
-
-	res.json({ success: true });
+	if (port) {
+		port.write(commandString, (err) => {
+			if (err) {
+				console.log(err);
+				res.json({ success: false, portError: true });
+			}
+			console.log('Message written');
+			res.json({ success: true });
+		});
+	} else {
+		res.json({ success: false, noPort: true });
+	}
 });
 
 

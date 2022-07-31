@@ -18,43 +18,43 @@
 		2: 0,
 		3: 0,
 		4: 0
-	}
+	};
 
 	const keys = {
 		'up': false,
 		'down': false,
 		'left': false,
 		'right': false
-	}
+	};
 
-	const speed = 100;
+	const speed = 50;
 
-	setInterval(async () => {
+	const sendCommand = async () => {
 		// console.log(motors);
 		// console.log(keys);
 		if (keys['up']) {
 			motors[1] = speed;
 			motors[2] = speed;
+			motors[3] = -speed;
+			motors[4] = -speed;
+		}
+		if (keys['down']) {
+			motors[1] = -speed;
+			motors[2] = -speed;
 			motors[3] = speed;
 			motors[4] = speed;
 		}
-		if (keys['down']) {
+		if (keys['left']) {
 			motors[1] = -speed;
 			motors[2] = -speed;
 			motors[3] = -speed;
 			motors[4] = -speed;
 		}
-		if (keys['left']) {
-			motors[1] = -speed;
-			motors[2] = -speed;
-			motors[3] = speed;
-			motors[4] = speed;
-		}
 		if (keys['right']) {
 			motors[1] = speed;
 			motors[2] = speed;
-			motors[3] = -speed;
-			motors[4] = -speed;	
+			motors[3] = speed;
+			motors[4] = speed;	
 		}
 
 		if (!(keys['up'] || keys['down'] || keys['left'] || keys['right'])) {
@@ -77,57 +77,72 @@
 			})
 		});
 
-		console.log(await response.status);
+		// console.log(await response.status);
 
 		const json = await response.json();
 
 		if (await json.success) {
 			const statusElement = document.getElementById('status');
 			statusElement.innerHTML = 'Status: Good';
-		} else {
+		} else if (await json.noPort) {
 			const statusElement = document.getElementById('status');
-			statusElement.innerHTML = 'Status: Bad';
+			statusElement.innerHTML = 'Status: Failed to establish connection to Arduino';
+		} else if (await json.portError) {
+			const statusElement = document.getElementById('status');
+			statusElement.innerHTML = 'Status: Error sending message to Arduino';
 		}
-	}, 100);
+	};
 
 	document.addEventListener('keydown', (e) => {
-		console.log(`keydown (key: ${e.key}, code: ${e.code})`);
+		// console.log(`keydown (key: ${e.key}, code: ${e.code})`);
+		let changed = false;
 		switch (e.key) {
 			case 'ArrowUp':
+				if (!keys['up']) { changed = true; }
 				keys['up'] = true;
 				break;
 			case 'ArrowDown':
+				if (!keys['down']) { changed = true; }
 				keys['down'] = true;
 				break;
 			case 'ArrowLeft':
+				if (!keys['left']) { changed = true; }
 				keys['left'] = true;
 				break;
 			case 'ArrowRight':
+				if (!keys['right']) { changed = true; }
 				keys['right'] = true;
 				break;
 			default:
+				if (keys['up'] || keys['down'] || keys['left'] || keys['right']) { changed = true; }
 				keys['up'] = false;
 				keys['down'] = false;
 				keys['left'] = false;
 				keys['right'] = false;
 		}
+		if (changed) { sendCommand(); }
 	});
 
 	document.addEventListener('keyup', (e) => {
-		console.log(`keyup (key: ${e.key}, code: ${e.code})`);
+		// console.log(`keyup (key: ${e.key}, code: ${e.code})`);
 		switch (e.key) {
 			case 'ArrowUp':
+				if (keys['up']) { changed = true; }
 				keys['up'] = false;
 				break;
 			case 'ArrowDown':
+				if (keys['down']) { changed = true; }
 				keys['down'] = false;
 				break;
 			case 'ArrowLeft':
+				if (keys['left']) { changed = true; }
 				keys['left'] = false;
 				break;
 			case 'ArrowRight':
+				if (keys['right']) { changed = true; }
 				keys['right'] = false;
 				break;
 		}
+		if (changed) { sendCommand(); }
 	});
 </script>
