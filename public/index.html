@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Roverbot</title>
+</head>
+<body>
+
+	<h2>Roverbot</h2>
+
+	<p id="status">Status: unknown</p>
+
+</body>
+</html>
+
+<script>
+	const motors = {
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0
+	}
+
+	const keys = {
+		'up': false,
+		'down': false,
+		'left': false,
+		'right': false
+	}
+
+	const speed = 100;
+
+	setInterval(async () => {
+		// console.log(motors);
+		// console.log(keys);
+		if (keys['up']) {
+			motors[1] = speed;
+			motors[2] = speed;
+			motors[3] = speed;
+			motors[4] = speed;
+		}
+		if (keys['down']) {
+			motors[1] = -speed;
+			motors[2] = -speed;
+			motors[3] = -speed;
+			motors[4] = -speed;
+		}
+		if (keys['left']) {
+			motors[1] = -speed;
+			motors[2] = -speed;
+			motors[3] = speed;
+			motors[4] = speed;
+		}
+		if (keys['right']) {
+			motors[1] = speed;
+			motors[2] = speed;
+			motors[3] = -speed;
+			motors[4] = -speed;	
+		}
+
+		if (!(keys['up'] || keys['down'] || keys['left'] || keys['right'])) {
+			motors[1] = 0;
+			motors[2] = 0;
+			motors[3] = 0;
+			motors[4] = 0;
+		}
+
+		const response = await fetch('/motors', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				m1: await motors[1],
+				m2: await motors[2],
+				m3: await motors[3],
+				m4: await motors[4]
+			})
+		});
+
+		console.log(await response.status);
+
+		const json = await response.json();
+
+		if (await json.success) {
+			const statusElement = document.getElementById('status');
+			statusElement.innerHTML = 'Status: Good';
+		} else {
+			const statusElement = document.getElementById('status');
+			statusElement.innerHTML = 'Status: Bad';
+		}
+	}, 100);
+
+	document.addEventListener('keydown', (e) => {
+		console.log(`keydown (key: ${e.key}, code: ${e.code})`);
+		switch (e.key) {
+			case 'ArrowUp':
+				keys['up'] = true;
+				break;
+			case 'ArrowDown':
+				keys['down'] = true;
+				break;
+			case 'ArrowLeft':
+				keys['left'] = true;
+				break;
+			case 'ArrowRight':
+				keys['right'] = true;
+				break;
+			default:
+				keys['up'] = false;
+				keys['down'] = false;
+				keys['left'] = false;
+				keys['right'] = false;
+		}
+	});
+
+	document.addEventListener('keyup', (e) => {
+		console.log(`keyup (key: ${e.key}, code: ${e.code})`);
+		switch (e.key) {
+			case 'ArrowUp':
+				keys['up'] = false;
+				break;
+			case 'ArrowDown':
+				keys['down'] = false;
+				break;
+			case 'ArrowLeft':
+				keys['left'] = false;
+				break;
+			case 'ArrowRight':
+				keys['right'] = false;
+				break;
+		}
+	});
+</script>
